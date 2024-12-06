@@ -1,9 +1,3 @@
-# haproxy_ba_defense
-Defense against black arts with HAPRoxy
-
-The project and documentation are still work in progress.
-
-
 docker run --rm -it \
     --network docker_haproxy \
     --ip 10.201.0.51 \

@@ -1,0 +1,163 @@
+services:
+  apache1:
+    image: httpd:2.4.62-alpine
+    volumes:
+      - ./config/apache1/index.html:/usr/local/apache2/htdocs/index.html:ro
+      - ./config/apache1/login.html:/usr/local/apache2/htdocs/login.html:ro
+      - /tmp:/tmp
+    restart: always
+    environment:
+      asd: 1
+    networks:
+      haproxy:
+        ipv4_address: 10.201.0.11
+    ports:
+      - "12081:80"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 300M
+
+  apache2:
+    image: httpd:2.4.62-alpine
+    volumes:
+      - ./config/apache2/index.html:/usr/local/apache2/htdocs/index.html:ro
+      - ./config/apache2/login.html:/usr/local/apache2/htdocs/login.html:ro
+      - /tmp:/tmp
+    restart: always
+    environment:
+      asd: 1
+    networks:
+      haproxy:
+        ipv4_address: 10.201.0.12
+    ports:
+      - "12082:80"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 300M
+  apache3:
+    image: httpd:2.4.62-alpine
+    # command: 
+    volumes:
+      - ./config/apacheError/index.html:/usr/local/apache2/htdocs/index.html:ro
+      - ./config/apacheError/login.html:/usr/local/apache2/htdocs/login.html:ro
+      - /tmp:/tmp
+    restart: always
+    environment:
+      asd: 1
+    networks:
+      haproxy:
+        ipv4_address: 10.201.0.13
+    ports:
+      - "12083:80"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 300M
+
+  nettools:
+    image: jonlabelle/network-tools
+    # command: 
+    volumes:
+      - ./nettools/curl_benchmark.sh:/opt/curl_benchmark.sh:ro
+    restart: always
+    environment:
+      asd: 1
+    networks:
+      haproxy:
+        ipv4_address: 10.201.0.30
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 300M
+
+  # mysql:
+  #   image: mysql:latest
+  #   # command: 
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: 1234
+  #   networks:
+  #     haproxy:
+  #       ipv4_address: 10.201.0.15
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.5'
+  #         memory: 200M
+
+
+  hub:
+    image: hub
+    build: ./hub
+    restart: always
+    networks:
+      haproxy:
+        ipv4_address: 10.201.0.40
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 500M
+  sender:
+    image: sender
+    build: ./sender
+    restart: always
+    networks:
+      haproxy:
+        ipv4_address: 10.201.0.41
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 100M
+
+  haproxy:
+    image: haproxy
+    build: ./haproxy
+    # command: 
+    volumes:
+      - type: bind
+        source: ./config/haproxy/whitelist.acl
+        target: /etc/haproxy/whitelist.acl
+      - type: bind
+        source: ./config/haproxy/haproxy.cfg
+        target: /etc/haproxy/haproxy.cfg
+      - type: bind
+        source: ./config/haproxy/lua_scripts
+        target: /etc/haproxy/lua_scripts/
+      - type: bind
+        source: ./config/haproxy/pages
+        target: /etc/haproxy/pages
+      - type: bind
+        source: ./config/haproxy/geodb
+        target: /etc/haproxy/geodb/
+      - /tmp:/tmp
+    restart: always
+    environment:
+      asd: 1
+    networks:
+      haproxy:
+        ipv4_address: 10.201.0.10
+    ports:
+      - "12080:80"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 500M
+
+networks:
+  haproxy:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.201.0.0/24

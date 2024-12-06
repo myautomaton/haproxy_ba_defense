@@ -1,0 +1,10 @@
+abuser:
+  date: "2024-11-01 20:21:28"
+  ip: "10.201.0.51"
+  abuse: "log4j-injection"
+  path: "/myweb/wp-admin"
+  body: ""
+  headers: 
+  - host: "10.201.0.10"
+  - user-agent: "curl/8.10.1"
+  - accept: "*/*"
